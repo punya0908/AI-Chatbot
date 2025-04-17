@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 min-h-screen flex items-center justify-center">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nutrition Chatbot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="w-full px-4 py-8">
+  <div class="bg-white rounded-3xl shadow-xl p-8 max-w-2xl mx-auto space-y-6">
+    <h1 class="text-3xl font-bold text-center text-purple-700">AI Nutrition Chatbot 🍎</h1>
+
+    <!-- Tabs -->
+    <div class="flex justify-center gap-4">
+      <button id="form-tab" class="px-4 py-2 rounded-full bg-purple-600 text-white">Form</button>
+      <button id="prompt-tab" class="px-4 py-2 rounded-full bg-gray-200 text-purple-700">Prompt</button>
+    </div>
+
+    <!-- Form Mode -->
+    <form id="chat-form" class="space-y-4">
+      <input type="number" placeholder="Age" id="age" class="w-full p-2 border rounded-xl" required />
+      <input type="number" placeholder="Weight (kg)" id="weight" class="w-full p-2 border rounded-xl" required />
+      <input type="number" placeholder="Height (cm)" id="height" class="w-full p-2 border rounded-xl" required />
+      <select id="gender" class="w-full p-2 border rounded-xl">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+      <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded-xl hover:bg-purple-700">
+        Get Nutrition Plan
+      </button>
+    </form>
+
+    <!-- Prompt Mode -->
+    <form id="prompt-form" class="space-y-4 hidden">
+      <textarea id="custom-prompt" rows="5" placeholder="Type your own prompt here..." class="w-full p-3 border rounded-xl"></textarea>
+      <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded-xl hover:bg-purple-700">
+        Ask AI
+      </button>
+    </form>
+
+    <!-- Output -->
+    <div id="output" class="bg-gray-100 p-4 rounded-xl text-gray-800 whitespace-pre-wrap"></div>
+  </div>
+
+  <script>
+    // Tab toggling
+    const formTab = document.getElementById("form-tab");
+    const promptTab = document.getElementById("prompt-tab");
+    const chatForm = document.getElementById("chat-form");
+    const promptForm = document.getElementById("prompt-form");
+
+    formTab.addEventListener("click", () => {
+      chatForm.classList.remove("hidden");
+      promptForm.classList.add("hidden");
+      formTab.classList.replace("bg-gray-200", "bg-purple-600");
+      formTab.classList.replace("text-purple-700", "text-white");
+      promptTab.classList.replace("bg-purple-600", "bg-gray-200");
+      promptTab.classList.replace("text-white", "text-purple-700");
+    });
+
+    promptTab.addEventListener("click", () => {
+      chatForm.classList.add("hidden");
+      promptForm.classList.remove("hidden");
+      promptTab.classList.replace("bg-gray-200", "bg-purple-600");
+      promptTab.classList.replace("text-purple-700", "text-white");
+      formTab.classList.replace("bg-purple-600", "bg-gray-200");
+      formTab.classList.replace("text-white", "text-purple-700");
+    });
+
+    // Form-based request
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const age = document.getElementById("age").value;
+      const weight = document.getElementById("weight").value;
+      const height = document.getElementById("height").value;
+      const gender = document.getElementById("gender").value;
+
+      const res = await fetch("http://127.0.0.1:8000/get_plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ age, weight, height, gender })
+      });
+
+      const data = await res.json();
+      document.getElementById("output").innerText = data.plan || "Something went wrong";
+    });
+
+    // Prompt-based request
+    promptForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const prompt = document.getElementById("custom-prompt").value;
+
+      const res = await fetch("http://127.0.0.1:8000/custom_prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
+      });
+
+      const data = await res.json();
+      document.getElementById("output").innerText = data.plan || "Something went wrong";
+    });
+  </script>
+</body>
+</html>
